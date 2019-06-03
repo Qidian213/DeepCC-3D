@@ -23,9 +23,11 @@ track_ops['window_width'] = 50
 track_ops['min_length'] = 5
 track_ops['alpha']= 1
 track_ops['beta'] = 0.02
+track_ops['beta_3d'] = 0.02
 track_ops['cluster_coeff'] = 0.75
 track_ops['nearest_neighbors'] = 8
 track_ops['speed_limit'] = 20
+track_ops['speed_limit_3d'] = 20
 track_ops['threshold'] = 19.0
 
 ###Trajectories

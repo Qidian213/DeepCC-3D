@@ -13,7 +13,7 @@ def getTrackletFeatures(tracklets):
     
     ## bounding box centers for each tracklets
     for i in range(numTracklets):
-        detections = tracklets[i]['data']
+        detections = tracklets[i]['data']  ### [frame, id, x, y, w, h, x_3d, y_3d, z_3d]
         
         # 2d points
         bboxes = detections  ### 

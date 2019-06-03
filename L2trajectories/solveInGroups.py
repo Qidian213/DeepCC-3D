@@ -4,6 +4,7 @@ from scipy.cluster.vq import vq,kmeans
 from sklearn.metrics.pairwise import pairwise_distances
 from L2trajectories import getAppearanceMatrix
 from L2trajectories import getSpaceTimeAffinity
+from L2trajectories import getSpaceTimeAffinity_3d
 from L2trajectories import mergeResults
 
 def solveInGroups(traje_ops, tracklets, labels,engine):
@@ -64,11 +65,13 @@ def solveInGroups(traje_ops, tracklets, labels,engine):
             
         spacetimeAffinity, impossibilityMatrix, indifferenceMatrix = getSpaceTimeAffinity.getSpaceTimeAffinity(tracklets_affinity,traje_ops['beta'],traje_ops['speed_limit'],traje_ops['indifference_time'])
 
+        spacetimeAffinity_3d, impossibilityMatrix_3d, indifferenceMatrix_3d = getSpaceTimeAffinity_3d.getSpaceTimeAffinity_3d(tracklets_affinity,traje_ops['beta'],traje_ops['speed_limit'],traje_ops['indifference_time'])
+        
         ## compute the correlation matrix
-        correlationMatrix = appearanceAffinity + spacetimeAffinity - 1
+        correlationMatrix = appearanceAffinity + spacetimeAffinity -1  ####    3d
         correlationMatrix = np.multiply(correlationMatrix , indifferenceMatrix)
-   
         correlationMatrix[impossibilityMatrix == 1] = float('-inf')
+
         for i in range(len(labelsDistance)):
             for j in range(len(labelsDistance[0])):
                 if(labelsDistance[i][j]==0):

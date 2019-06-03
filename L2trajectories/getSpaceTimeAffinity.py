@@ -61,7 +61,7 @@ def getSpaceTimeAffinity(tracklets, beta1, speedLimit, indifferenceLimit):
 
     frameDifferenceV = frameDifference.copy()
     frameDifferenceV[frameDifferenceV <0] = 0
-    frameDifferenceV[frameDifferenceV >0] =1
+    frameDifferenceV[frameDifferenceV >0] = 1
     v = frameDifferenceV + overlapping
     v[v>0] = 1
 

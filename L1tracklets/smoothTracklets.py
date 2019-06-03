@@ -25,13 +25,13 @@ def smoothTracklets(feature_bb,numTracklets,segmentStart,segmentInterval, minTra
      #   print(start,finish,intervalLength)
         frames = [int(x[1]) for x in detections_fetures]
         frames = np.array(frames)
-        currentTracklet = np.zeros((int(intervalLength),6))
+        currentTracklet = np.zeros((int(intervalLength),9))
         for val in range(int(intervalLength)):
             currentTracklet[val][1] = i
             currentTracklet[val][0] = start+val
         
-        ### Fit left, top, right, bottom, xworld, yworld
-        for n in range(2,6):
+        ### Fit x, y, w, h, x_3d, y_3d, z_3d
+        for n in range(2,9):
             points = [defe[n] for defe in detections_fetures]
             points = np.array(points)
             p = np.polyfit(frames,points,1)
@@ -41,9 +41,9 @@ def smoothTracklets(feature_bb,numTracklets,segmentStart,segmentInterval, minTra
 
         ###  Compute appearance features
         medianFeature_det =  np.mean(detections_fetures, axis=0)  #### or median
-        medianFeature = medianFeature_det[6:]
-        centers = medianFeature_det[:6]
-        centerPoint = [centers[2]+0.5*centers[4],centers[3]+0.5*centers[5]]
+        medianFeature = medianFeature_det[9:]
+        centers = medianFeature_det[:9]
+        centerPoint = [centers[2]+0.5*centers[4],centers[3]+0.5*centers[5],centers[6],centers[7],centers[8]]
         centerPoint = np.array(centerPoint)
         centerPointWorld = 1
         
@@ -65,13 +65,6 @@ def smoothTracklets(feature_bb,numTracklets,segmentStart,segmentInterval, minTra
         tmp_smoothTracklets['ids'] = i
         smoothedTracklets.append(tmp_smoothTracklets)
     return smoothedTracklets
-
-
-
-
-
-
-
 
 
 

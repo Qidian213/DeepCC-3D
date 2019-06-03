@@ -9,9 +9,11 @@ from sklearn.cluster import SpectralClustering ,AffinityPropagation
 
 from external import utils
 from L1tracklets import estimateVelocities
+from L1tracklets import estimateVelocities_3d
 from L1tracklets import getSpatialGroupIDs
 from L1tracklets import getAppearanceSubMatrix
 from L1tracklets import motionAffinity
+from L1tracklets import motionAffinity_3d
 from L1tracklets import smoothTracklets
 from L1tracklets import trackletsVis
 from L1tracklets import trackletsVis2
@@ -20,9 +22,11 @@ def create_tracklets(track_ops,feature_bb,frame_start,frame_end,engine):
     tracklet = []
 
     detections = [x[0:6] for x in feature_bb]
-    detections_3d = [x[6:9] for x in feature_bb]
     features = [x[9:] for x in feature_bb]
     features = np.array(features)
+    
+    detections_3d = [x[6:9] for x in feature_bb]   ####  3d
+    detections_3d = np.array(detections_3d)   #### 3d
     
     ###Find detections in search range
     searchRangeFrames = [int(x[1]) for x in detections]
@@ -40,6 +44,9 @@ def create_tracklets(track_ops,feature_bb,frame_start,frame_end,engine):
     estimatedVelocity , pairwiseDistances = estimateVelocities.estimateVelocities(detections,detectionCenters,searchRangeFrames,frame_start,frame_end,track_ops['nearest_neighbors'],track_ops['speed_limit'])
     estimatedVelocity = np.array(estimatedVelocity)
     
+    estimatedVelocity_3d , pairwiseDistances_3d = estimateVelocities_3d.estimateVelocities_3d(detections,detections_3d,searchRangeFrames,frame_start,frame_end,track_ops['nearest_neighbors'],track_ops['speed_limit_3d'])         ####  3d
+    estimatedVelocity_3d = np.array(estimatedVelocity_3d)  ####  3d
+
     # Spatial groupping
     spatialGroupIDs = getSpatialGroupIDs.getSpatialGroupIDs(True,searchRangeFrames,pairwiseDistances,track_ops)
 
@@ -52,24 +59,30 @@ def create_tracklets(track_ops,feature_bb,frame_start,frame_end,engine):
 
         # Create an appearance affinity matrix and a motion affinity matrix
         appearanceCorrelation = getAppearanceSubMatrix.getAppearanceSubMatrix(elements,features,track_ops['threshold'])
-        spatialGroupDetectionCenters = detectionCenters[elements]
         spatialGroupDetectionFrames = searchRangeFrames[elements]
+        spatialGroupDetectionCenters = detectionCenters[elements]
         spatialGroupEstimatedVelocity = estimatedVelocity[elements]
+
+        spatialGroupDetection_3d = detections_3d[elements]                  ####  3d
+        spatialGroupEstimatedVelocity_3d = estimatedVelocity_3d[elements]   ####  3d
         
         motionCorrelation, impMatrix,intervalDistance = motionAffinity.motionAffinity(spatialGroupDetectionCenters,spatialGroupDetectionFrames,spatialGroupEstimatedVelocity,track_ops['speed_limit'], track_ops['beta'])
-        
+
+        motionCorrelation_3d, impMatrix_3d,intervalDistance_3d = motionAffinity_3d.motionAffinity_3d(spatialGroupDetection_3d,spatialGroupDetectionFrames,spatialGroupEstimatedVelocity_3d,track_ops['speed_limit_3d'], track_ops['beta_3d'])   #### 3d
+
         # Combine affinities into correlations
         discountMatrix = np.minimum(1, -np.log(intervalDistance/track_ops['window_width']))
         
-        correlationMatrix = np.multiply(motionCorrelation,discountMatrix)+appearanceCorrelation
-        correlationMatrix[impMatrix==1] =  -float('inf')                                       ####check point
+        correlationMatrix = np.multiply(motionCorrelation,discountMatrix)+appearanceCorrelation ###  +np.multiply(motionCorrelation_3d,discountMatrix)  ####  3d
+        correlationMatrix[impMatrix==1] =  -float('inf')
+        correlationMatrix[impMatrix_3d==1] =  -float('inf')           #### 3d
         
         # Solve the graph partitioning problem
         
         #print('spatialGroupID: ',spatialGroupID)
         correlationMatrix = correlationMatrix.tolist()
         labels = engine.KernighanLin(correlationMatrix,len(correlationMatrix))
-        labels =  np.array(labels,dtype = float)
+        labels = np.array(labels,dtype = float)
         labels = labels+totalLabels
         totalLabels = np.max(labels)
         identities = labels
@@ -91,8 +104,4 @@ def create_tracklets(track_ops,feature_bb,frame_start,frame_end,engine):
         smoothedTracklets[i]['ids'] = i+1
     
     return smoothedTracklets
-
-
-
-
 

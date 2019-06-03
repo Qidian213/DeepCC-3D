@@ -48,7 +48,10 @@ def main():
                 fe_bb[0] = cam
                 fe_bb[1] = frame_num
                 fe_bb[2:6] = bbox
-                fe_bb[6:9] = [1.0,1.0,1.0]
+                fe_bb[6] = frame_num
+                fe_bb[7] = bbox[0]
+                fe_bb[8] = bbox[1]
+               # print(bbox)
                 fe_bb[9:] = feature
                 emb_storage.append(fe_bb)
         frame_num = frame_num+1
@@ -67,7 +70,3 @@ def main():
 if __name__ == '__main__':
     main()
     
-
-
-
-
